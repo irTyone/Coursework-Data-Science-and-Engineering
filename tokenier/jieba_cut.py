@@ -50,6 +50,7 @@ def info_write(code,content_list,info:TinyDB,time) :
     ws= dict(Counter(content_list))
     info.insert({'id':code,'words':ws,"time": time})
     return
+    
 
 def cut_process(data_file,df,vocab,exec,info):
     for _, row in tqdm(df.iterrows(),desc=f"数据表：{data_file}"):
