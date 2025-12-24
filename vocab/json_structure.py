@@ -3,20 +3,32 @@ import argparse
 from typing import Dict, List, Set
 
 
-# =========================
-# 1. 加载停用词
-# =========================
+
 def load_stopwords(stopword_file: str) -> Set[str]:
-    """
-    加载停用词表（每行一个词）
-    """
-    with open(stopword_file, "r", encoding="utf-8") as f:
-        return set(w.strip() for w in f if w.strip())
+   
+    # ---------- JSON 停用词 ----------
+    if stopword_file.endswith(".json"):
+        with open(stopword_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
 
+        if isinstance(data, dict) and "stops" in data:
+            stops = data["stops"]
+            if not isinstance(stops, list):
+                raise ValueError("stop_merge.json 中 stops 必须是 list")
+            return set(w.strip() for w in stops if isinstance(w, str) and w.strip())
 
-# =========================
-# 2. TinyDB 词表 → JSON
-# =========================
+        if isinstance(data, dict):
+            return set(k.strip() for k in data.keys() if k.strip())
+
+        if isinstance(data, list):
+            return set(w.strip() for w in data if isinstance(w, str) and w.strip())
+
+        raise ValueError("不支持的 stopwords JSON 格式")
+
+    else:
+        with open(stopword_file, "r", encoding="utf-8") as f:
+            return set(w.strip() for w in f if w.strip())
+
 def vocab_2_json(
     tinydb_file: str,
     output_file: str,
@@ -47,19 +59,16 @@ def vocab_2_json(
     return vocab_new
 
 
-# =========================
-# 3. TinyDB 文档词频 → JSON
-# =========================
+
 def freq_2_json(
     tinydb_file: str,
     output_file: str,
-    valid_vocab_ids: Set[str]
+    vocab: Dict[str, str]
 ) -> List[Dict[str, int]]:
-    """
-    TinyDB 格式文章词频 → 列表形式
-    [{word_id: freq, ...}, ...]
-    仅保留 vocab 中存在的词
-    """
+  
+    # 构造反向映射：word -> word_id
+    word2id = {word: wid for wid, word in vocab.items()}
+
     with open(tinydb_file, "r", encoding="utf-8") as f:
         docs_tiny = json.load(f)
 
@@ -68,11 +77,10 @@ def freq_2_json(
     for doc_info in docs_tiny["_default"].values():
         words = doc_info.get("words", {})
 
-        filtered = {
-            word_id: freq
-            for word_id, freq in words.items()
-            if word_id in valid_vocab_ids and freq > 0
-        }
+        filtered = {}
+        for word, freq in words.items():
+            if word in word2id and freq > 0:
+                filtered[word2id[word]] = freq
 
         if filtered:
             docs_new.append(filtered)
@@ -84,9 +92,7 @@ def freq_2_json(
     return docs_new
 
 
-# =========================
-# 4. 主入口
-# =========================
+
 def main():
     parser = argparse.ArgumentParser(
         description="TinyDB → LDA/OLDA 可用 JSON（含停用词过滤）"
@@ -112,15 +118,15 @@ def main():
         stopwords=stopwords
     )
 
-    # 3. 处理文档词频（严格对齐词表）
+    
     valid_vocab_ids = set(vocab.keys())
     freq_2_json(
-        args.doc_tinydb,
-        freq_out,
-        valid_vocab_ids=valid_vocab_ids
-    )
+    args.doc_tinydb,
+    freq_out,
+    vocab
+)
 
-    print("\n🎉 数据准备完成，可直接用于 LDA / OLDA 训练")
+    print("\n 更大规模的停用词筛查")
 
 
 if __name__ == "__main__":

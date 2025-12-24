@@ -3,3 +3,7 @@
 *.json
 __pycache__/
 *.log
+*.model
+model/lda.model.expElogbeta.npy
+model/lda.model.id2word
+model/lda.model.state
