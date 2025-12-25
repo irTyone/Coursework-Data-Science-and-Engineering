@@ -1,7 +1,7 @@
 # 项目使用说明
 
 ## 目录结构概览
-
+```
 .
 ├── content_info/ # 文档分词信息
 ├── core/ # 分词脚本用到的相关路径
@@ -14,7 +14,7 @@
 ├── vocab/ # 词表及停用词相关
 └── OLDA/ # OLDA 训练脚本
 
-
+```
 
 ## 环境依赖
 
@@ -65,12 +65,12 @@ jieba_cut.py使用了vocab/stopwords.txt进行了初步的停用词过滤，一�
 根据停用词表过滤 vocab.json 中的无效词
 
 生成中间处理 JSON 文件，存放在：
-
+```
 data/process_1/
   ├── vocab.json
   └── freq.json
 运行方式：
-
+```
 bash
 ```bash
 sh vocab/filter_stop.sh
@@ -84,12 +84,12 @@ sh vocab/filter_stop.sh
 
 输出结果保存在：
 
-
+```
 data/IT-IDF/
   ├── vocab_tfidf.json
   └── freq_tfidf.json
 运行方式：
-
+```
 ```bash
 sh vocab/tf_idf.sh
 ```
@@ -101,6 +101,7 @@ sh vocab/tf_idf.sh
 使用 data/IT-IDF/vocab_tfidf.json 和 freq_tfidf.json 训练 OLDA/LDA 模型
 
 输出模型文件和训练结果到 model/：
+```
 model/
   ├── lda.model                  # 模型文件，可直接 load
   ├── lda.model.state            # 内部训练状态
@@ -108,6 +109,7 @@ model/
   ├── lda.model.id2word          # id2word 映射
   ├── topics.json                # 主题关键词
   └── doc_topics.json            # 文档主题分布
+``` 
 运行方式：
 
 ```bash
