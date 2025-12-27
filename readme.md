@@ -318,7 +318,6 @@ python infer.py \
 
 
 
-````markdown
 # LDA 文档主题可视化（view.py）
 
 本模块用于基于 `doc_topics.json` 和 `topics_labeled.json` 对 LDA 推理结果进行可视化，包括：
